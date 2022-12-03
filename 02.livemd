@@ -147,7 +147,7 @@ defmodule Game do
   end
 
   def game(opponent, you)
-  def game(o, y) when o == y, do: 3
+  def game(o, o), do: 3
   def game(o, y) when :erlang.map_get(y, @wins) == o, do: 6
   def game(_, _), do: 0
 end
