@@ -1,0 +1,93 @@
+# Day 3
+
+```elixir
+Mix.install([
+  {:kino_aoc, git: "https://github.com/ljgago/kino_aoc"}
+])
+```
+
+## Part 1
+
+<!-- livebook:{"attrs":{"day":"3","session_secret":"AOC_2022","variable":"puzzle_input","year":"2022"},"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} = KinoAOC.download_puzzle("2022", "3", System.fetch_env!("LB_AOC_2022"))
+```
+
+## Part 1
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(fn rusack ->
+  size = byte_size(rusack)
+
+  {a, b} = String.split_at(rusack, div(size, 2))
+
+  {MapSet.new(to_charlist(a)), MapSet.new(to_charlist(b))}
+end)
+|> Enum.reduce(0, fn {a, b}, acc ->
+  letter = MapSet.intersection(a, b) |> Enum.at(0)
+
+  case letter do
+    upper when upper in ?A..?Z ->
+      acc + upper - 38
+
+    lower when lower in ?a..?z ->
+      acc + lower - 96
+  end
+end)
+```
+
+## Part 2
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(&to_charlist/1)
+|> Enum.map(&MapSet.new/1)
+|> Enum.chunk_every(3)
+|> Enum.reduce(0, fn [rusack_1, rusack_2, rusack_3], acc ->
+  letter =
+    MapSet.intersection(rusack_1, rusack_2)
+    |> MapSet.intersection(rusack_3)
+    |> Enum.at(0)
+
+  item_priority =
+    case letter do
+      upper when upper in ?A..?Z ->
+        upper - 38
+
+      lower when lower in ?a..?z ->
+        lower - 96
+    end
+
+  acc + item_priority
+end)
+```
+
+## Part 2 better version
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(&to_charlist/1)
+|> Enum.map(&MapSet.new/1)
+|> Enum.chunk_every(3)
+|> Enum.map(fn v -> Enum.reduce(v, &MapSet.intersection/2) end)
+|> Enum.map(&Enum.at(&1, 0))
+|> Enum.reduce(
+  0,
+  fn
+    letter, acc when letter in ?A..?Z ->
+      acc + letter - 38
+
+    letter, acc when letter in ?a..?z ->
+      acc + letter - 96
+  end
+)
+```
+
+```elixir
+MapSet.new(["2a"])
+```
