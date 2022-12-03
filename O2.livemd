@@ -1,0 +1,158 @@
+# Untitled notebook
+
+```elixir
+Mix.install([
+  {:kino_aoc, git: "https://github.com/ljgago/kino_aoc"}
+])
+```
+
+## Section
+
+<!-- livebook:{"attrs":{"day":"2","session_secret":"AOC_SESSION","variable":"puzzle_input","year":"2022"},"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} = KinoAOC.download_puzzle("2022", "2", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+A -> rock
+
+B -> paper
+
+C -> scissors
+
+X -> rock
+
+Y -> paper
+
+Z -> scissors
+
+```elixir
+defmodule Game do
+  @translate %{
+    "A" => "rock",
+    "B" => "paper",
+    "C" => "scissors",
+    "X" => "rock",
+    "Y" => "paper",
+    "Z" => "scissors"
+  }
+  @wins %{"rock" => "scissors", "scissors" => "paper", "paper" => "rock"}
+  @shape %{"rock" => 1, "paper" => 2, "scissors" => 3}
+
+  def p1(data) do
+    data
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn round ->
+      round
+      |> String.split(" ")
+      |> Enum.map(&Map.get(@translate, &1))
+      |> then(fn [a, b] -> {a, b} end)
+    end)
+    |> Enum.frequencies()
+    |> Enum.reduce(0, fn {{opponent, choice}, frequence}, acc ->
+      acc + frequence * (Game.game(opponent, choice) + Map.get(@shape, choice))
+    end)
+  end
+
+  def game(opponent, you)
+  def game(o, y) when o == y, do: 3
+  def game(o, y) when :erlang.map_get(y, @wins) == o, do: 6
+  def game(_, _), do: 0
+end
+```
+
+```elixir
+t = Game.p1(puzzle_input)
+```
+
+```elixir
+translate = %{
+  "A" => "rock",
+  "B" => "paper",
+  "C" => "scissors",
+  "X" => "rock",
+  "Y" => "paper",
+  "Z" => "scissors"
+}
+
+wins = %{"rock" => "scissors", "scissors" => "paper", "paper" => "rock"}
+shape = %{"rock" => 1, "paper" => 2, "scissors" => 3}
+
+puzzle_input
+|> String.trim()
+|> String.split("\n")
+|> Enum.map(fn round ->
+  round
+  |> String.split(" ")
+  |> Enum.map(&Map.get(translate, &1))
+  |> then(fn [a, b] -> {a, b} end)
+end)
+|> Enum.frequencies()
+|> Enum.reduce(0, fn {{opponent, choice}, frequence}, acc ->
+  acc + frequence * (Game.game(opponent, choice) + Map.get(shape, choice))
+end)
+|> dbg
+```
+
+## Part 2
+
+```elixir
+defmodule Game do
+  @translate %{
+    "A" => "rock",
+    "B" => "paper",
+    "C" => "scissors",
+    "X" => "rock",
+    "Y" => "paper",
+    "Z" => "scissors"
+  }
+  @wins %{"rock" => "scissors", "scissors" => "paper", "paper" => "rock"}
+  @loses %{"scissors" => "rock", "rock" => "paper", "paper" => "scissors"}
+  @shape %{"rock" => 1, "paper" => 2, "scissors" => 3}
+
+  def p1(data) do
+    data
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn round ->
+      round
+      |> String.split(" ")
+      |> Enum.map(&Map.get(@translate, &1))
+      |> then(fn [a, b] -> {a, b} end)
+    end)
+    |> Enum.frequencies()
+    |> Enum.reduce(0, fn {{opponent, choice}, frequence}, acc ->
+      acc + frequence * (Game.game(opponent, choice) + Map.get(@shape, choice))
+    end)
+  end
+
+  def p2(data) do
+    data
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn <<a, ?\s, b>> -> {@translate[<<a>>], <<b>>} end)
+    |> Enum.frequencies()
+    |> Enum.reduce(0, fn {{opponent, strategy}, frequence}, acc ->
+      choice =
+        case strategy do
+          "X" -> Map.get(@wins, opponent)
+          "Y" -> opponent
+          "Z" -> Map.get(@loses, opponent)
+        end
+
+      acc + frequence * (game(opponent, choice) + Map.get(@shape, choice))
+    end)
+    |> dbg()
+  end
+
+  def game(opponent, you)
+  def game(o, y) when o == y, do: 3
+  def game(o, y) when :erlang.map_get(y, @wins) == o, do: 6
+  def game(_, _), do: 0
+end
+```
+
+```elixir
+Game.p2(puzzle_input)
+```
