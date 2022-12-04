@@ -1,0 +1,107 @@
+# Day 4
+
+```elixir
+Mix.install([
+  {:kino_aoc, git: "https://github.com/ljgago/kino_aoc"}
+])
+```
+
+## Input
+
+<!-- livebook:{"attrs":{"day":"4","session_secret":"AOC_2022","variable":"puzzle_input","year":"2022"},"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} = KinoAOC.download_puzzle("2022", "4", System.fetch_env!("LB_AOC_2022"))
+```
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(fn pair ->
+  pair
+  |> String.split(",")
+  |> Enum.map(&(String.split(&1, "-") |> Enum.map(fn int -> String.to_integer(int) end)))
+  |> Enum.map(fn [a, b] -> a..b |> Enum.to_list() end)
+  |> Enum.map(fn list -> MapSet.new(list) end)
+end)
+|> Enum.reduce(0, fn [a, b], acc ->
+  if MapSet.disjoint?(a, b) do
+    acc
+  else
+    acc + 1
+  end
+end)
+|> dbg
+```
+
+```elixir
+pair = "7-7,8-42"
+```
+
+```elixir
+
+```
+
+```elixir
+for elf <- String.split(pair, ",") do
+  for sets <- String.split(elf, "-") do
+    sets
+    # String.to_integer(sets)
+  end
+end
+```
+
+```elixir
+input = "2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8"
+```
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(fn pair ->
+  pair
+  |> String.split(",")
+  |> Enum.map(&(String.split(&1, "-") |> Enum.map(fn int -> String.to_integer(int) end)))
+  |> Enum.map(fn [a, b] -> a..b |> Enum.to_list() end)
+  |> Enum.map(fn list -> MapSet.new(list) end)
+end)
+|> Enum.map(fn [a, b] -> MapSet.subset?(a, b) or MapSet.subset?(b, a) end)
+|> Enum.filter(& &1)
+|> Enum.count()
+```
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(fn pair ->
+  pair
+  |> String.split(",")
+  |> Enum.map(&(String.split(&1, "-") |> Enum.map(fn int -> String.to_integer(int) end)))
+  |> Enum.map(fn [a, b] -> a..b |> Enum.to_list() end)
+  |> Enum.map(fn list -> MapSet.new(list) end)
+end)
+|> Enum.map(fn [a, b] -> MapSet.disjoint?(a, b) end)
+|> Enum.filter(& &1)
+|> Enum.count()
+```
+
+```elixir
+puzzle_input
+|> String.split("\n", trim: true)
+|> Enum.map(fn pair ->
+  pair
+  |> String.split(",")
+  |> Enum.map(&(String.split(&1, "-") |> Enum.map(fn int -> String.to_integer(int) end)))
+  |> Enum.map(fn [a, b] -> a..b |> Enum.to_list() end)
+  |> Enum.map(fn list -> MapSet.new(list) end)
+end)
+|> Enum.map(fn [a, b] -> MapSet.disjoint?(a, b) end)
+|> Enum.reject(& &1)
+|> Enum.count()
+|> dbg
+```
