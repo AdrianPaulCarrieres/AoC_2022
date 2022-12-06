@@ -1,0 +1,164 @@
+# Untitled notebook
+
+```elixir
+Mix.install([
+  {:kino_aoc, git: "https://github.com/ljgago/kino_aoc"}
+])
+```
+
+## Section
+
+<!-- livebook:{"attrs":{"day":"5","session_secret":"AOC_2022","variable":"puzzle_input","year":"2022"},"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} = KinoAOC.download_puzzle("2022", "5", System.fetch_env!("LB_AOC_2022"))
+```
+
+```elixir
+input = "
+    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2"
+```
+
+```elixir
+[crates, moves] = String.split(puzzle_input, "\n\n")
+```
+
+```elixir
+crates =
+  crates
+  |> String.split("\n", trim: true)
+  |> Enum.drop(-1)
+  |> Enum.map(fn line ->
+    line
+    |> String.codepoints()
+    |> Enum.chunk_every(4)
+    |> Enum.map(fn
+      ["[", n, "]" | _] -> n
+      _ -> nil
+    end)
+  end)
+  |> Enum.zip()
+  |> Enum.map(fn tuple ->
+    tuple
+    |> Tuple.to_list()
+    |> Enum.reject(fn el -> is_nil(el) end)
+  end)
+  |> Enum.with_index(1)
+  |> Map.new(fn {list, index} -> {index, list} end)
+  |> dbg()
+```
+
+```elixir
+moves =
+  moves
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn move ->
+    Regex.named_captures(~r/move (?<count>[0-9]+) from (?<from>[0-9]) to (?<to>[0-9])/, move)
+    |> Map.new(fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
+  end)
+```
+
+```elixir
+moves
+|> Enum.reduce(crates, fn move, crates ->
+  {crates_to_move, crates} =
+    Map.get_and_update(crates, move.from, fn list -> Enum.split(list, move.count) end)
+
+  crates_to_move = Enum.reverse(crates_to_move)
+
+  Map.update(crates, move.to, crates[move.to], fn value -> crates_to_move ++ value end)
+  |> IO.inspect()
+end)
+|> Enum.reduce("", fn {_k, [top | _]}, acc -> acc <> top end)
+```
+
+## Module
+
+```elixir
+defmodule Solver do
+  def parse_crates(crates) do
+    crates
+    |> String.split("\n", trim: true)
+    |> Enum.drop(-1)
+    |> Enum.map(fn line ->
+      line
+      |> String.codepoints()
+      |> Enum.chunk_every(4)
+      |> Enum.map(fn
+        ["[", n, "]" | _] -> n
+        _ -> nil
+      end)
+    end)
+    |> Enum.zip()
+    |> Enum.map(fn tuple ->
+      tuple
+      |> Tuple.to_list()
+      |> Enum.reject(fn el -> is_nil(el) end)
+    end)
+    |> Enum.with_index(1)
+    |> Map.new(fn {list, index} -> {index, list} end)
+  end
+
+  def parse_moves(moves) do
+    moves
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn move ->
+      Regex.named_captures(~r/move (?<count>[0-9]+) from (?<from>[0-9]) to (?<to>[0-9])/, move)
+      |> Map.new(fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
+    end)
+  end
+
+  def do_moves(crates, moves, reverse? \\ true) do
+    moves
+    |> Enum.reduce(crates, fn move, crates ->
+      {crates_to_move, crates} =
+        Map.get_and_update(crates, move.from, fn list -> Enum.split(list, move.count) end)
+
+      crates_to_move =
+        if reverse? do
+          Enum.reverse(crates_to_move)
+        else
+          crates_to_move
+        end
+
+      Map.update(crates, move.to, crates[move.to], fn value -> crates_to_move ++ value end)
+    end)
+  end
+
+  def part_1(input) do
+    [crates, moves] = String.split(input, "\n\n")
+
+    crates = parse_crates(crates)
+    moves = parse_moves(moves)
+
+    do_moves(crates, moves)
+    |> Enum.reduce("", fn {_k, [top_crate | _]}, acc -> acc <> top_crate end)
+  end
+
+  def part_2(input) do
+    [crates, moves] = String.split(input, "\n\n")
+
+    crates = parse_crates(crates)
+    moves = parse_moves(moves)
+
+    do_moves(crates, moves, false)
+    |> Enum.reduce("", fn {_k, [top_crate | _]}, acc -> acc <> top_crate end)
+  end
+end
+```
+
+```elixir
+Solver.part_1(puzzle_input)
+```
+
+```elixir
+Solver.part_2(puzzle_input)
+```
