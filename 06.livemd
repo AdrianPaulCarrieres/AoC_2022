@@ -1,0 +1,40 @@
+# Day 6
+
+```elixir
+Mix.install([
+  {:kino_aoc, git: "https://github.com/ljgago/kino_aoc"}
+])
+```
+
+## Section
+
+<!-- livebook:{"attrs":{"day":"6","session_secret":"AOC_2022","variable":"puzzle_input","year":"2022"},"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} = KinoAOC.download_puzzle("2022", "6", System.fetch_env!("LB_AOC_2022"))
+```
+
+```elixir
+input = "mjqjpqmgbljsphdztnvjfqwrcgsmlb"
+```
+
+```elixir
+defmodule Solve do
+  def solve(input, step) do
+    input
+    |> String.codepoints()
+    |> Enum.chunk_every(step, 1)
+    |> Enum.map(fn list -> list |> MapSet.new() |> MapSet.size() end)
+    |> Enum.find_index(fn size -> size == step end)
+    |> Kernel.+(step)
+  end
+end
+```
+
+```elixir
+Solve.solve(puzzle_input, 4)
+```
+
+```elixir
+Solve.solve(puzzle_input, 14)
+```
